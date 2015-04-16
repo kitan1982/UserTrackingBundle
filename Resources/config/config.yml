@@ -1,0 +1,13 @@
+plugin:
+  has_options: false
+
+  admin_tools:
+    - name: claroline_user_tracking_admin_tool
+      class: line-chart
+      
+  tools:
+    - name: claroline_user_tracking_tool
+      class: line-chart
+      is_displayable_in_workspace: false
+      is_displayable_in_desktop: true
+    

@@ -1,0 +1,4 @@
+claro_user_tracking_bundle:
+    resource: "@ClarolineUserTrackingBundle/Controller/"
+    prefix:   user_tracking
+    type:     annotation
