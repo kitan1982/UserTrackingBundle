@@ -1,0 +1,7 @@
+add_widget_to_tab: 'Add widget to tab'
+tab_creation: 'Tab creation'
+tab_delete_confirm_message: 'Do you really want to delete this tab ?'
+tab_delete_confirm_title: 'Delete tab'
+tab_edition: 'Tab edition'
+widget_tab_delete_confirm_message: 'Do you really want to remove this widget from this tab?'
+widget_tab_delete_confirm_title: 'Remove widget from tab'

@@ -1,0 +1,7 @@
+add_widget_to_tab: 'Agregar un widget a esta pestaña'
+tab_creation: 'Creación de pestañas'
+tab_delete_confirm_message: '¿Está seguro que desea suprimir esta pestaña?'
+tab_delete_confirm_title: 'Suprimir pestaña'
+tab_edition: 'Editar pestaña'
+widget_tab_delete_confirm_message: '¿Está seguro que desea retirar este widget de esta pestaña?'
+widget_tab_delete_confirm_title: 'Retirar widgets de esta pestaña'
