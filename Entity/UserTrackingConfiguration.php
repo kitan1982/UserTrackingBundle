@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(name="claro_user_tracking_configuration")
- * @ORM\Entity(repositoryClass="Claroline\UserTrackingBundle\Repository\UserTrackingConfigurationRepository")
+ * @ORM\Entity()
  */
 class UserTrackingConfiguration
 {
