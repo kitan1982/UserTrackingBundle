@@ -645,7 +645,7 @@ class AdminUserTrackingController extends Controller
 
     /**
      * @EXT\Route(
-     *     "administration/widgets/display/config/update",
+     *     "/administration/widgets/display/config/update",
      *     name="claro_user_tracking_admin_widgets_display_config_update",
      *     options = {"expose"=true}
      * )
@@ -683,6 +683,46 @@ class AdminUserTrackingController extends Controller
         }
 
         return new Response('success', 200);
+    }
+
+     /**
+     * @EXT\Route(
+     *     "/administration/widget/{widgetInstance}/configuration",
+     *     name="claro_user_tracking_admin_widget_configuration",
+     *     options={"expose"=true}
+     * )
+     */
+    public function adminWidgetConfigurationAction(WidgetInstance $widgetInstance)
+    {
+        $this->checkWidgetInstance($widgetInstance);
+
+        $event = $this->eventDispatcher->dispatch(
+            "widget_{$widgetInstance->getWidget()->getName()}_configuration",
+            'ConfigureWidget',
+            array($widgetInstance)
+        );
+
+        return new Response($event->getContent());
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/administration/widget/{widgetInstance}/content",
+     *     name="claro_user_tracking_admin_widget_content",
+     *     options={"expose"=true}
+     * )
+     */
+    public function adminWidgetContentAction(WidgetInstance $widgetInstance)
+    {
+        $this->checkWidgetInstance($widgetInstance);
+
+        $event = $this->eventDispatcher->dispatch(
+            "widget_{$widgetInstance->getWidget()->getName()}",
+            'DisplayWidget',
+            array($widgetInstance)
+        );
+
+        return new Response($event->getContent());
     }
 
     private function checkHomeTab(HomeTab $homeTab)
