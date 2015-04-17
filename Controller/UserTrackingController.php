@@ -93,7 +93,7 @@ class UserTrackingController extends Controller
      * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
      * @EXT\Template()
      */
-    public function userTrackingIndexAction($homeTabId = -1)
+    public function userTrackingIndexAction(User $user, $homeTabId = -1)
     {
         $homeTabConfigs = $this->homeTabManager
             ->getHomeTabConfigsByType('user_tracking');
@@ -131,7 +131,10 @@ class UserTrackingController extends Controller
                 $homeTab,
                 'user_tracking'
             );
-        $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForAdmin($widgetHomeTabConfigs);
+        $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForUser(
+            $user,
+            $widgetHomeTabConfigs
+        );
 
         foreach ($wdcs as $wdc) {
 
@@ -316,6 +319,322 @@ class UserTrackingController extends Controller
         return new Response('success', 200);
     }
 
+    /**
+     * @EXT\Route(
+     *     "/tab/{homeTab}/widget/instance/create/form",
+     *     name="claro_user_tracking_widget_instance_create_form",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     * @EXT\Template("ClarolineUserTrackingBundle:UserTracking:widgetInstanceCreateModalForm.html.twig")
+     */
+    public function widgetInstanceCreateFormAction(HomeTab $homeTab)
+    {
+        $instanceForm = $this->formFactory->create(
+            new WidgetInstanceType($this->userTrackingConfig),
+            new WidgetInstance()
+        );
+        $displayConfigForm = $this->formFactory->create(
+            new WidgetDisplayConfigType(),
+            new WidgetDisplayConfig()
+        );
+
+        return array(
+            'homeTab' => $homeTab,
+            'instanceForm' => $instanceForm->createView(),
+            'displayConfigForm' => $displayConfigForm->createView()
+        );
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/tab/{homeTab}/widget/instance/create",
+     *     name="claro_user_tracking_widget_instance_create",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     * @EXT\Template("ClarolineUserTrackingBundle:UserTracking:widgetInstanceCreateModalForm.html.twig")
+     */
+    public function widgetInstanceCreateAction(User $user, HomeTab $homeTab)
+    {
+        $widgetInstance = new WidgetInstance();
+        $widgetDisplayConfig = new WidgetDisplayConfig();
+
+        $instanceForm = $this->formFactory->create(
+            new WidgetInstanceType($this->userTrackingConfig),
+            $widgetInstance
+        );
+        $displayConfigForm = $this->formFactory->create(
+            new WidgetDisplayConfigType(),
+            $widgetDisplayConfig
+        );
+        $instanceForm->handleRequest($this->request);
+        $displayConfigForm->handleRequest($this->request);
+
+        if ($instanceForm->isValid() && $displayConfigForm->isValid()) {
+            $widgetInstance->setUser($user);
+            $widgetInstance->setIsAdmin(false);
+            $widgetInstance->setIsDesktop(false);
+            $widgetHomeTabConfig = new WidgetHomeTabConfig();
+            $widgetHomeTabConfig->setHomeTab($homeTab);
+            $widgetHomeTabConfig->setWidgetInstance($widgetInstance);
+            $widgetHomeTabConfig->setWidgetOrder(1);
+            $widgetHomeTabConfig->setHomeTab($homeTab);
+            $widgetHomeTabConfig->setType('user_tracking');
+            $widgetHomeTabConfig->setUser($user);
+            $widgetDisplayConfig->setWidgetInstance($widgetInstance);
+            $widgetDisplayConfig->setUser($user);
+            $widget = $widgetInstance->getWidget();
+            $widgetDisplayConfig->setWidth($widget->getDefaultWidth());
+            $widgetDisplayConfig->setHeight($widget->getDefaultHeight());
+
+            $this->widgetManager->persistWidgetConfigs(
+                $widgetInstance,
+                $widgetHomeTabConfig,
+                $widgetDisplayConfig
+            );
+
+            return new JsonResponse(
+                array(
+                    'widgetInstanceId' => $widgetInstance->getId(),
+                    'widgetHomeTabConfigId' => $widgetHomeTabConfig->getId(),
+                    'widgetDisplayConfigId' => $widgetDisplayConfig->getId(),
+                    'color' => $widgetDisplayConfig->getColor(),
+                    'name' => $widgetInstance->getName(),
+                    'configurable' => $widgetInstance->getWidget()->isConfigurable() ? 1 : 0
+                ),
+                200
+            );
+        } else {
+
+            return array(
+                'homeTab' => $homeTab,
+                'instanceForm' => $instanceForm->createView(),
+                'displayConfigForm' => $displayConfigForm->createView()
+            );
+        }
+    }
+
+//    /**
+//     * @EXT\Route(
+//     *     "/administration/widget/instance/{widgetInstance}/config/{widgetHomeTabConfig}/display/{widgetDisplayConfig}/edit/form",
+//     *     name="claro_user_tracking_admin_widget_config_edit_form",
+//     *     options = {"expose"=true}
+//     * )
+//     * @EXT\Template("ClarolineUserTrackingBundle:AdminUserTracking:adminWidgetConfigEditModalForm.html.twig")
+//     */
+//    public function adminWidgetConfigEditFormAction(
+//        WidgetInstance $widgetInstance,
+//        WidgetHomeTabConfig $widgetHomeTabConfig,
+//        WidgetDisplayConfig $widgetDisplayConfig
+//    )
+//    {
+//        $this->checkWidgetInstance($widgetInstance);
+//        $this->checkWidgetDisplayConfig($widgetDisplayConfig);
+//
+//        $instanceForm = $this->formFactory->create(
+//            new WidgetDisplayType(),
+//            $widgetInstance
+//        );
+//        $displayConfigForm = $this->formFactory->create(
+//            new WidgetDisplayConfigType(),
+//            $widgetDisplayConfig
+//        );
+//
+//        return array(
+//            'instanceForm' => $instanceForm->createView(),
+//            'displayConfigForm' => $displayConfigForm->createView(),
+//            'widgetInstance' => $widgetInstance,
+//            'widgetHomeTabConfig' => $widgetHomeTabConfig,
+//            'widgetDisplayConfig' => $widgetDisplayConfig
+//        );
+//    }
+//
+//    /**
+//     * @EXT\Route(
+//     *     "/administration/widget/instance/{widgetInstance}/config/{widgetHomeTabConfig}/display/{widgetDisplayConfig}/edit",
+//     *     name="claro_user_tracking_admin_widget_config_edit",
+//     *     options = {"expose"=true}
+//     * )
+//     * @EXT\Template("ClarolineUserTrackingBundle:AdminUserTracking:adminWidgetConfigEditModalForm.html.twig")
+//     */
+//    public function adminWidgetConfigEditAction(
+//        WidgetInstance $widgetInstance,
+//        WidgetHomeTabConfig $widgetHomeTabConfig,
+//        WidgetDisplayConfig $widgetDisplayConfig
+//    )
+//    {
+//        $this->checkWidgetInstance($widgetInstance);
+//        $this->checkWidgetDisplayConfig($widgetDisplayConfig);
+//
+//        $instanceForm = $this->formFactory->create(
+//            new WidgetDisplayType(),
+//            $widgetInstance
+//        );
+//        $displayConfigForm = $this->formFactory->create(
+//            new WidgetDisplayConfigType(),
+//            $widgetDisplayConfig
+//        );
+//        $instanceForm->handleRequest($this->request);
+//        $displayConfigForm->handleRequest($this->request);
+//
+//        if ($instanceForm->isValid() && $displayConfigForm->isValid()) {
+//            $this->widgetManager->persistWidgetConfigs(
+//                $widgetInstance,
+//                null,
+//                $widgetDisplayConfig
+//            );
+//
+//            return new JsonResponse(
+//                array(
+//                    'id' => $widgetHomeTabConfig->getId(),
+//                    'color' => $widgetDisplayConfig->getColor(),
+//                    'title' => $widgetInstance->getName()
+//                ),
+//                200
+//            );
+//        } else {
+//
+//            return array(
+//                'instanceForm' => $instanceForm->createView(),
+//                'displayConfigForm' => $displayConfigForm->createView(),
+//                'widgetInstance' => $widgetInstance,
+//                'widgetHomeTabConfig' => $widgetHomeTabConfig,
+//                'widgetDisplayConfig' => $widgetDisplayConfig
+//            );
+//        }
+//    }
+//
+//    /**
+//     * @EXT\Route(
+//     *     "/administration/widget/config/{widgetHomeTabConfig}/delete",
+//     *     name="claro_user_tracking_admin_widget_instance_delete",
+//     *     options = {"expose"=true}
+//     * )
+//     */
+//    public function adminWidgetHomeTabConfigDeleteAction(
+//        WidgetHomeTabConfig $widgetHomeTabConfig
+//    )
+//    {
+//        $this->checkWidgetHomeTabConfig($widgetHomeTabConfig);
+//        $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
+//        $this->homeTabManager->deleteWidgetHomeTabConfig($widgetHomeTabConfig);
+//        $this->widgetManager->removeInstance($widgetInstance);
+//
+//        return new Response('success', 204);
+//    }
+
+    /**
+     * @EXT\Route(
+     *     "/widget/diplay/config/{widgetDisplayConfig}/position/row/{row}/column/{column}/update",
+     *     name="claro_user_tracking_widget_display_config_position_update",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Method("POST")
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     */
+    public function widgetDisplayConfigPositionUpdateAction(
+        User $user,
+        WidgetDisplayConfig $widgetDisplayConfig,
+        $row,
+        $column
+    )
+    {
+        $this->checkWidgetDisplayConfig($widgetDisplayConfig, $user);
+        $widgetDisplayConfig->setRow($row);
+        $widgetDisplayConfig->setColumn($column);
+        $this->widgetManager->persistWidgetDisplayConfigs(array($widgetDisplayConfig));
+
+        return new Response('success', 204);
+    }
+
+//    /**
+//     * @EXT\Route(
+//     *     "/widgets/display/config/update",
+//     *     name="claro_user_tracking_widgets_display_config_update",
+//     *     options = {"expose"=true}
+//     * )
+//     * @EXT\Method("POST")
+//     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+//     * @EXT\ParamConverter(
+//     *     "widgetDisplayConfigs",
+//     *      class="ClarolineCoreBundle:Widget\WidgetDisplayConfig",
+//     *      options={"multipleIds" = true, "name" = "wdcIds"}
+//     * )
+//     */
+//    public function widgetsDisplayConfigUpdateAction(
+//        User $user,
+//        array $widgetDisplayConfigs
+//    )
+//    {
+//        $toPersist = array();
+//
+//        foreach ($widgetDisplayConfigs as $config) {
+//
+//            $this->checkWidgetDisplayConfig($config, $user);
+//        }
+//        $datas = $this->request->request->all();
+//
+//        foreach ($widgetDisplayConfigs as $config) {
+//            $id = $config->getId();
+//
+//            if (isset($datas[$id]) && !empty($datas[$id])) {
+//                $config->setRow($datas[$id]['row']);
+//                $config->setColumn($datas[$id]['column']);
+//                $config->setWidth($datas[$id]['width']);
+//                $config->setHeight($datas[$id]['height']);
+//                $toPersist[] = $config;
+//            }
+//        }
+//
+//        if (count($toPersist) > 0) {
+//            $this->widgetManager->persistWidgetDisplayConfigs($toPersist);
+//        }
+//
+//        return new Response('success', 200);
+//    }
+
+//     /**
+//     * @EXT\Route(
+//     *     "/widget/{widgetInstance}/configuration",
+//     *     name="claro_user_tracking_widget_configuration",
+//     *     options={"expose"=true}
+//     * )
+//     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+//     */
+//    public function widgetConfigurationAction(User $user, WidgetInstance $widgetInstance)
+//    {
+//        $this->checkWidgetInstance($widgetInstance, $user);
+//
+//        $event = $this->eventDispatcher->dispatch(
+//            "widget_{$widgetInstance->getWidget()->getName()}_configuration",
+//            'ConfigureWidget',
+//            array($widgetInstance)
+//        );
+//
+//        return new Response($event->getContent());
+//    }
+
+    /**
+     * @EXT\Route(
+     *     "/widget/{widgetInstance}/content",
+     *     name="claro_user_tracking_widget_content",
+     *     options={"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     */
+    public function widgetContentAction(User $user, WidgetInstance $widgetInstance)
+    {
+        $this->checkWidgetInstance($widgetInstance, $user);
+
+        $event = $this->eventDispatcher->dispatch(
+            "widget_{$widgetInstance->getWidget()->getName()}",
+            'DisplayWidget',
+            array($widgetInstance)
+        );
+
+        return new Response($event->getContent());
+    }
 
     private function checkHomeTab(HomeTab $homeTab, User $user)
     {
@@ -332,6 +651,35 @@ class UserTrackingController extends Controller
         if ($homeTabConfig->getUser() !== $user ||
             !is_null($homeTabConfig->getWorkspace()) ||
             $homeTabConfig->getType() !== 'user_tracking') {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkWidgetInstance(WidgetInstance $widgetInstance, User $user)
+    {
+        if ($widgetInstance->getUser() !== $user ||
+            !is_null($widgetInstance->getWorkspace()) ||
+            $widgetInstance->isAdmin() ||
+            $widgetInstance->isDesktop()) {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkWidgetHomeTabConfig(WidgetHomeTabConfig $whtc, User $user)
+    {
+        if ($whtc->getType() !== 'user_tracking' ||
+            $whtc->getUser() !== $user ||
+            !is_null($whtc->getWorkspace())) {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkWidgetDisplayConfig(WidgetDisplayConfig $wdc, User $user)
+    {
+        if ($wdc->getUser() !== $user || !is_null($wdc->getWorkspace())) {
 
             throw new AccessDeniedException();
         }

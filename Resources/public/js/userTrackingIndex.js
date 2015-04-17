@@ -140,17 +140,17 @@
         $(this).colorpicker();
     });
     
-//    $('#widgets-section').on('click', '#create-widget-instance', function () {
-//        window.Claroline.Modal.displayForm(
-//            Routing.generate(
-//                'claro_user_tracking_widget_instance_create_form',
-//                {'homeTab': currentHomeTabId}
-//            ),
-//            addWidget,
-//            function() {}
-//        );
-//    });
-//    
+    $('#widgets-section').on('click', '#create-widget-instance', function () {
+        window.Claroline.Modal.displayForm(
+            Routing.generate(
+                'claro_user_tracking_widget_instance_create_form',
+                {'homeTab': currentHomeTabId}
+            ),
+            addWidget,
+            function() {}
+        );
+    });
+    
 //    $('#widgets-list-panel').on('click', '.edit-widget-btn', function () {
 //        var widgetHomeTabId = $(this).data('widget-hometab-config-id');
 //        var widgetDisplayConfigId = $(this).data('widget-display-config-id');
@@ -314,92 +314,92 @@
 //        var grid = $('.grid-stack').data('gridstack');
 //        grid.remove_widget(widgetElement);
 //    };
-//    
-//    var addWidget = function (datas) {
-//        var wiId = datas['widgetInstanceId'];
-//        var whtcId = datas['widgetHomeTabConfigId'];
-//        var wdcId = datas['widgetDisplayConfigId'];
-//        var color = datas['color'];
-//        var name = datas['name'];
-//        var configurable = parseInt(datas['configurable']) === 1 ? true : false;
-//        var widgetElement =
-//            '<div class="grid-stack-item"' +
-//                ' id="widget-element-' + whtcId + '"' +
-//                ' data-widget-display-config-id="' + wdcId + '"' +
-//            '>' +
-//                '<div class="grid-stack-item-content panel panel-default"' +
-//                    ' id="widget-element-content-' + whtcId + '"';
-//                     
-//        if (color !== null) {
-//            widgetElement += 'style="border-color: ' + color + ';"';
-//        }
-//        widgetElement +=
-//                '>' +
-//                    '<div class="panel-heading"' +
-//                        ' id="widget-element-header-' + whtcId + '"';
-//                     
-//        if (color !== null) {
-//            widgetElement += 'style="background-color: ' + color + ';"';
-//        }    
-//        widgetElement +=
-//                    '>' +
-//                        '<h3 class="panel-title">' +
-//                            '<span class="pull-right">' +
-//                                '<i class="fa fa-times close close-widget-btn"' +
-//                                  ' data-widget-hometab-config-id="' + whtcId + '"' +
-//                                '></i>' +
-//                                '<span class="close">&nbsp;</span>' +
-//                                    '<i class="fa fa-cog close edit-widget-btn"' +
-//                                      ' data-widget-hometab-config-id="' + whtcId + '"' +
-//                                      ' data-widget-instance-id="' + wiId + '"' +
-//                                      ' data-widget-display-config-id="' + wdcId + '"' +
-//                                    '></i>';
-//             
-//        if (configurable) {
-//            widgetElement +=        '<span class="close">&nbsp;</span>' +
-//                                        '<i class="fa fa-pencil close edit-widget-content-btn"' +
-//                                          ' data-widget-instance-id="' + wiId + '"' +
-//                                          ' data-widget-instance-name="' + name + '"' +
-//                                        '></i>';
-//        }    
-//        widgetElement +=    '</span>' +
-//                            '<span id="widget-element-title-' + whtcId + '">' +
-//                                 name +
-//                            '</span>' +
-//                        '</h3>' +
-//                    '</div>' +
-//                    '<div id="widget-instance-content-' + wiId + '" class="panel-body">' +
-//                    '</div>' +
-//                '</div>' +
-//            '</div>';
-//            
-//        var grid = $('.grid-stack').data('gridstack');
-//        grid.add_widget(widgetElement, 0, 0, 4, 3, true);
-//        
-//        $.ajax({
-//            url: Routing.generate(
-//                'claro_widget_display_config_position_update',
-//                {
-//                    'widgetDisplayConfig': wdcId,
-//                    'row': $('#widget-element-'+ whtcId).attr('data-gs-y'),
-//                    'column': $('#widget-element-'+ whtcId).attr('data-gs-x'),
-//                }
-//            ),
-//            type: 'POST'
-//        });
-//        
-//        $.ajax({
-//            url: Routing.generate(
-//                'claro_widget_content',
-//                {'widgetInstance': wiId}
-//            ),
-//            type: 'GET',
-//            success: function (datas) {
-//                $('#widget-instance-content-' + wiId).html(datas);
-//            }
-//        });
-//    };
-//    
+    
+    var addWidget = function (datas) {
+        var wiId = datas['widgetInstanceId'];
+        var whtcId = datas['widgetHomeTabConfigId'];
+        var wdcId = datas['widgetDisplayConfigId'];
+        var color = datas['color'];
+        var name = datas['name'];
+        var configurable = parseInt(datas['configurable']) === 1 ? true : false;
+        var widgetElement =
+            '<div class="grid-stack-item"' +
+                ' id="widget-element-' + whtcId + '"' +
+                ' data-widget-display-config-id="' + wdcId + '"' +
+            '>' +
+                '<div class="grid-stack-item-content panel panel-default"' +
+                    ' id="widget-element-content-' + whtcId + '"';
+                     
+        if (color !== null) {
+            widgetElement += 'style="border-color: ' + color + ';"';
+        }
+        widgetElement +=
+                '>' +
+                    '<div class="panel-heading"' +
+                        ' id="widget-element-header-' + whtcId + '"';
+                     
+        if (color !== null) {
+            widgetElement += 'style="background-color: ' + color + ';"';
+        }    
+        widgetElement +=
+                    '>' +
+                        '<h3 class="panel-title">' +
+                            '<span class="pull-right">' +
+                                '<i class="fa fa-times close close-widget-btn"' +
+                                  ' data-widget-hometab-config-id="' + whtcId + '"' +
+                                '></i>' +
+                                '<span class="close">&nbsp;</span>' +
+                                    '<i class="fa fa-cog close edit-widget-btn"' +
+                                      ' data-widget-hometab-config-id="' + whtcId + '"' +
+                                      ' data-widget-instance-id="' + wiId + '"' +
+                                      ' data-widget-display-config-id="' + wdcId + '"' +
+                                    '></i>';
+             
+        if (configurable) {
+            widgetElement +=        '<span class="close">&nbsp;</span>' +
+                                        '<i class="fa fa-pencil close edit-widget-content-btn"' +
+                                          ' data-widget-instance-id="' + wiId + '"' +
+                                          ' data-widget-instance-name="' + name + '"' +
+                                        '></i>';
+        }    
+        widgetElement +=    '</span>' +
+                            '<span id="widget-element-title-' + whtcId + '">' +
+                                 name +
+                            '</span>' +
+                        '</h3>' +
+                    '</div>' +
+                    '<div id="widget-instance-content-' + wiId + '" class="panel-body">' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+            
+        var grid = $('.grid-stack').data('gridstack');
+        grid.add_widget(widgetElement, 0, 0, 4, 3, true);
+        
+        $.ajax({
+            url: Routing.generate(
+                'claro_user_tracking_widget_display_config_position_update',
+                {
+                    'widgetDisplayConfig': wdcId,
+                    'row': $('#widget-element-'+ whtcId).attr('data-gs-y'),
+                    'column': $('#widget-element-'+ whtcId).attr('data-gs-x'),
+                }
+            ),
+            type: 'POST'
+        });
+        
+        $.ajax({
+            url: Routing.generate(
+                'claro_user_tracking_widget_content',
+                {'widgetInstance': wiId}
+            ),
+            type: 'GET',
+            success: function (datas) {
+                $('#widget-instance-content-' + wiId).html(datas);
+            }
+        });
+    };
+    
 //    var updateWidget = function (datas) {
 //        var id = datas['id'];
 //        var color = (datas['color'] === null) ? '' : datas['color'];

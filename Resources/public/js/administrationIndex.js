@@ -399,7 +399,7 @@
         
         $.ajax({
             url: Routing.generate(
-                'claro_admin_widget_display_config_position_update',
+                'claro_user_tracking_admin_widget_display_config_position_update',
                 {
                     'widgetDisplayConfig': wdcId,
                     'row': $('#widget-element-'+ whtcId).attr('data-gs-y'),
@@ -411,7 +411,7 @@
         
         $.ajax({
             url: Routing.generate(
-                'claro_widget_content',
+                'claro_user_tracking_admin_widget_content',
                 {'widgetInstance': wiId}
             ),
             type: 'GET',

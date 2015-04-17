@@ -467,7 +467,6 @@ class AdminUserTrackingController extends Controller
         $displayConfigForm->handleRequest($this->request);
 
         if ($instanceForm->isValid() && $displayConfigForm->isValid()) {
-
             $widgetInstance->setIsAdmin(true);
             $widgetInstance->setIsDesktop(false);
             $widgetHomeTabConfig = new WidgetHomeTabConfig();
@@ -745,12 +744,12 @@ class AdminUserTrackingController extends Controller
         }
     }
 
-    private function checkWidgetInstance(WidgetInstance $wi)
+    private function checkWidgetInstance(WidgetInstance $widgetInstance)
     {
-        if (!is_null($wi->getUser()) ||
-            !is_null($wi->getWorkspace()) ||
-            !$wi->isAdmin() ||
-            $wi->isDesktop()) {
+        if (!is_null($widgetInstance->getUser()) ||
+            !is_null($widgetInstance->getWorkspace()) ||
+            !$widgetInstance->isAdmin() ||
+            $widgetInstance->isDesktop()) {
 
             throw new AccessDeniedException();
         }
