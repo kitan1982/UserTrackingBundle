@@ -20,6 +20,7 @@ use Claroline\CoreBundle\Event\StrictDispatcher;
 use Claroline\CoreBundle\Form\HomeTabConfigType;
 use Claroline\CoreBundle\Form\HomeTabType;
 use Claroline\CoreBundle\Form\WidgetDisplayConfigType;
+use Claroline\CoreBundle\Form\WidgetDisplayType;
 use Claroline\CoreBundle\Manager\HomeTabManager;
 use Claroline\CoreBundle\Manager\WidgetManager;
 use Claroline\UserTrackingBundle\Form\UserTrackingConfigurationType;
@@ -509,6 +510,97 @@ class AdminUserTrackingController extends Controller
 
     /**
      * @EXT\Route(
+     *     "/administration/widget/instance/{widgetInstance}/config/{widgetHomeTabConfig}/display/{widgetDisplayConfig}/edit/form",
+     *     name="claro_user_tracking_admin_widget_config_edit_form",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("ClarolineUserTrackingBundle:AdminUserTracking:adminWidgetConfigEditModalForm.html.twig")
+     */
+    public function adminWidgetConfigEditFormAction(
+        WidgetInstance $widgetInstance,
+        WidgetHomeTabConfig $widgetHomeTabConfig,
+        WidgetDisplayConfig $widgetDisplayConfig
+    )
+    {
+        $this->checkAccessForWidgetInstance($widgetInstance);
+        $this->checkAccessForWidgetDisplayConfig($widgetDisplayConfig);
+
+        $instanceForm = $this->formFactory->create(
+            new WidgetDisplayType(),
+            $widgetInstance
+        );
+        $displayConfigForm = $this->formFactory->create(
+            new WidgetDisplayConfigType(),
+            $widgetDisplayConfig
+        );
+
+        return array(
+            'instanceForm' => $instanceForm->createView(),
+            'displayConfigForm' => $displayConfigForm->createView(),
+            'widgetInstance' => $widgetInstance,
+            'widgetHomeTabConfig' => $widgetHomeTabConfig,
+            'widgetDisplayConfig' => $widgetDisplayConfig
+        );
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/administration/widget/instance/{widgetInstance}/config/{widgetHomeTabConfig}/display/{widgetDisplayConfig}/edit",
+     *     name="claro_user_tracking_admin_widget_config_edit",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("ClarolineUserTrackingBundle:AdminUserTracking:adminWidgetConfigEditModalForm.html.twig")
+     */
+    public function adminWidgetConfigEditAction(
+        WidgetInstance $widgetInstance,
+        WidgetHomeTabConfig $widgetHomeTabConfig,
+        WidgetDisplayConfig $widgetDisplayConfig
+    )
+    {
+        $this->checkAccessForWidgetInstance($widgetInstance);
+        $this->checkAccessForWidgetDisplayConfig($widgetDisplayConfig);
+
+        $instanceForm = $this->formFactory->create(
+            new WidgetDisplayType(),
+            $widgetInstance
+        );
+        $displayConfigForm = $this->formFactory->create(
+            new WidgetDisplayConfigType(),
+            $widgetDisplayConfig
+        );
+        $instanceForm->handleRequest($this->request);
+        $displayConfigForm->handleRequest($this->request);
+
+        if ($instanceForm->isValid() && $displayConfigForm->isValid()) {
+            $this->widgetManager->persistWidgetConfigs(
+                $widgetInstance,
+                null,
+                $widgetDisplayConfig
+            );
+
+            return new JsonResponse(
+                array(
+                    'id' => $widgetHomeTabConfig->getId(),
+                    'color' => $widgetDisplayConfig->getColor(),
+                    'title' => $widgetInstance->getName()
+                ),
+                200
+            );
+        } else {
+
+            return array(
+                'instanceForm' => $instanceForm->createView(),
+                'displayConfigForm' => $displayConfigForm->createView(),
+                'widgetInstance' => $widgetInstance,
+                'widgetHomeTabConfig' => $widgetHomeTabConfig,
+                'widgetDisplayConfig' => $widgetDisplayConfig
+            );
+        }
+    }
+
+
+    /**
+     * @EXT\Route(
      *     "/administration/widget/diplay/config/{widgetDisplayConfig}/position/row/{row}/column/{column}/update",
      *     name="claro_user_tracking_admin_widget_display_config_position_update",
      *     options = {"expose"=true}
@@ -548,6 +640,17 @@ class AdminUserTrackingController extends Controller
         if (!is_null($homeTabConfig->getUser()) ||
             !is_null($homeTabConfig->getWorkspace()) ||
             $homeTabConfig->getType() !== 'admin_user_tracking') {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkAccessForWidgetInstance(WidgetInstance $wi)
+    {
+        if (!is_null($wi->getUser()) ||
+            !is_null($wi->getWorkspace()) ||
+            !$wi->isAdmin() ||
+            $wi->isDesktop()) {
 
             throw new AccessDeniedException();
         }
