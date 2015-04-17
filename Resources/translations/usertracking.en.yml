@@ -1,4 +1,5 @@
 add_widget_to_tab: 'Add widget to tab'
+no_widget_defined_in_configuration: 'No widget is defined in configuration'
 tab_creation: 'Tab creation'
 tab_delete_confirm_message: 'Do you really want to delete this tab ?'
 tab_delete_confirm_title: 'Delete tab'

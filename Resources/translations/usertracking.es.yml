@@ -1,4 +1,5 @@
 add_widget_to_tab: 'Agregar un widget a esta pestaña'
+no_widget_defined_in_configuration: 'No widget is defined in configuration'
 tab_creation: 'Creación de pestañas'
 tab_delete_confirm_message: '¿Está seguro que desea suprimir esta pestaña?'
 tab_delete_confirm_title: 'Suprimir pestaña'

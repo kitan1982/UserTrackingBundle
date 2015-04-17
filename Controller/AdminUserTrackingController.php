@@ -13,11 +13,17 @@ namespace Claroline\UserTrackingBundle\Controller;
 
 use Claroline\CoreBundle\Entity\Home\HomeTab;
 use Claroline\CoreBundle\Entity\Home\HomeTabConfig;
+use Claroline\CoreBundle\Entity\Widget\WidgetDisplayConfig;
+use Claroline\CoreBundle\Entity\Widget\WidgetHomeTabConfig;
+use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
+use Claroline\CoreBundle\Event\StrictDispatcher;
 use Claroline\CoreBundle\Form\HomeTabConfigType;
 use Claroline\CoreBundle\Form\HomeTabType;
+use Claroline\CoreBundle\Form\WidgetDisplayConfigType;
 use Claroline\CoreBundle\Manager\HomeTabManager;
 use Claroline\CoreBundle\Manager\WidgetManager;
 use Claroline\UserTrackingBundle\Form\UserTrackingConfigurationType;
+use Claroline\UserTrackingBundle\Form\WidgetInstanceType;
 use Claroline\UserTrackingBundle\Manager\UserTrackingManager;
 use JMS\DiExtraBundle\Annotation as DI;
 use JMS\SecurityExtraBundle\Annotation as SEC;
@@ -37,16 +43,19 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class AdminUserTrackingController extends Controller
 {
+    private $eventDispatcher;
     private $formFactory;
     private $homeTabManager;
     private $request;
     private $router;
     private $translator;
+    private $userTrackingConfig;
     private $userTrackingManager;
     private $widgetManager;
 
     /**
      * @DI\InjectParams({
+     *     "eventDispatcher"     = @DI\Inject("claroline.event.event_dispatcher"),
      *     "formFactory"         = @DI\Inject("form.factory"),
      *     "homeTabManager"      = @DI\Inject("claroline.manager.home_tab_manager"),
      *     "requestStack"        = @DI\Inject("request_stack"),
@@ -57,20 +66,23 @@ class AdminUserTrackingController extends Controller
      * })
      */
     public function __construct(
+        StrictDispatcher $eventDispatcher,
         FormFactory $formFactory,
         HomeTabManager $homeTabManager,
         RequestStack $requestStack,
-        Translator $translator,
         UrlGeneratorInterface $router,
+        Translator $translator,
         UserTrackingManager $userTrackingManager,
         WidgetManager $widgetManager
     )
     {
+        $this->eventDispatcher  = $eventDispatcher;
         $this->formFactory = $formFactory;
         $this->homeTabManager = $homeTabManager;
         $this->request = $requestStack->getCurrentRequest();
         $this->router = $router;
         $this->translator = $translator;
+        $this->userTrackingConfig = $userTrackingManager->getConfiguration();
         $this->userTrackingManager = $userTrackingManager;
         $this->widgetManager = $widgetManager;
     }
@@ -93,6 +105,7 @@ class AdminUserTrackingController extends Controller
         $widgets = array();
         $firstElement = true;
         $initWidgetsPosition = false;
+        $canAddWidgets = count($this->userTrackingConfig->getWidgets()) > 0;
 
         if ($tabId !== -1) {
 
@@ -152,7 +165,8 @@ class AdminUserTrackingController extends Controller
             'curentHomeTabId' => $tabId,
             'homeTabConfigs' => $homeTabConfigs,
             'widgetsDatas' => $widgets,
-            'initWidgetsPosition' => $initWidgetsPosition
+            'initWidgetsPosition' => $initWidgetsPosition,
+            'canAddWidgets' => $canAddWidgets
         );
     }
 
@@ -166,11 +180,10 @@ class AdminUserTrackingController extends Controller
      */
     public function userTrackingConfigureFormAction()
     {
-        $config = $this->userTrackingManager->getConfiguration();
         $form = $this->formFactory->create(
             new UserTrackingConfigurationType($this->translator),
-            $config
-        );
+            $this->userTrackingConfig
+       );
 
         return array('form' => $form->createView());
     }
@@ -185,15 +198,14 @@ class AdminUserTrackingController extends Controller
      */
     public function userTrackingConfigureAction()
     {
-        $config = $this->userTrackingManager->getConfiguration();
         $form = $this->formFactory->create(
             new UserTrackingConfigurationType($this->translator),
-            $config
+            $this->userTrackingConfig
         );
         $form->handleRequest($this->request);
 
         if ($form->isValid()) {
-            $this->userTrackingManager->persistConfiguration($config);
+            $this->userTrackingManager->persistConfiguration($this->userTrackingConfig);
 
             return new RedirectResponse(
                 $this->router->generate('claro_user_tracking_administration_index')
@@ -403,6 +415,124 @@ class AdminUserTrackingController extends Controller
         return new Response('success', 200);
     }
 
+    /**
+     * @EXT\Route(
+     *     "/administration/tab/{homeTab}/widget/instance/create/form",
+     *     name="claro_user_tracking_admin_widget_instance_create_form",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("ClarolineUserTrackingBundle:AdminUserTracking:adminWidgetInstanceCreateModalForm.html.twig")
+     */
+    public function adminWidgetInstanceCreateFormAction(HomeTab $homeTab)
+    {
+        $instanceForm = $this->formFactory->create(
+            new WidgetInstanceType($this->userTrackingConfig),
+            new WidgetInstance()
+        );
+        $displayConfigForm = $this->formFactory->create(
+            new WidgetDisplayConfigType(),
+            new WidgetDisplayConfig()
+        );
+
+        return array(
+            'homeTab' => $homeTab,
+            'instanceForm' => $instanceForm->createView(),
+            'displayConfigForm' => $displayConfigForm->createView()
+        );
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/administration/tab/{homeTab}/widget/instance/create",
+     *     name="claro_user_tracking_admin_widget_instance_create",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("ClarolineUserTrackingBundle:AdminUserTracking:adminWidgetInstanceCreateModalForm.html.twig")
+     */
+    public function adminWidgetInstanceCreateAction(HomeTab $homeTab)
+    {
+        $widgetInstance = new WidgetInstance();
+        $widgetDisplayConfig = new WidgetDisplayConfig();
+
+        $instanceForm = $this->formFactory->create(
+            new WidgetInstanceType($this->userTrackingConfig),
+            $widgetInstance
+        );
+        $displayConfigForm = $this->formFactory->create(
+            new WidgetDisplayConfigType(),
+            $widgetDisplayConfig
+        );
+        $instanceForm->handleRequest($this->request);
+        $displayConfigForm->handleRequest($this->request);
+
+        if ($instanceForm->isValid() && $displayConfigForm->isValid()) {
+
+            $widgetInstance->setIsAdmin(true);
+            $widgetInstance->setIsDesktop(false);
+            $widgetHomeTabConfig = new WidgetHomeTabConfig();
+            $widgetHomeTabConfig->setHomeTab($homeTab);
+            $widgetHomeTabConfig->setWidgetInstance($widgetInstance);
+            $widgetHomeTabConfig->setWidgetOrder(1);
+            $widgetHomeTabConfig->setHomeTab($homeTab);
+            $widgetHomeTabConfig->setType('admin_user_tracking');
+            $widget = $widgetInstance->getWidget();
+            $widgetDisplayConfig->setWidgetInstance($widgetInstance);
+            $widgetDisplayConfig->setWidth($widget->getDefaultWidth());
+            $widgetDisplayConfig->setHeight($widget->getDefaultHeight());
+
+            $this->widgetManager->persistWidgetConfigs(
+                $widgetInstance,
+                $widgetHomeTabConfig,
+                $widgetDisplayConfig
+            );
+
+            return new JsonResponse(
+                array(
+                    'widgetInstanceId' => $widgetInstance->getId(),
+                    'widgetHomeTabConfigId' => $widgetHomeTabConfig->getId(),
+                    'widgetDisplayConfigId' => $widgetDisplayConfig->getId(),
+                    'color' => $widgetDisplayConfig->getColor(),
+                    'name' => $widgetInstance->getName(),
+                    'configurable' => $widgetInstance->getWidget()->isConfigurable() ? 1 : 0
+                ),
+                200
+            );
+        } else {
+
+            return array(
+                'homeTab' => $homeTab,
+                'instanceForm' => $instanceForm->createView(),
+                'displayConfigForm' => $displayConfigForm->createView()
+            );
+        }
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/administration/widget/diplay/config/{widgetDisplayConfig}/position/row/{row}/column/{column}/update",
+     *     name="claro_user_tracking_admin_widget_display_config_position_update",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Method("POST")
+     *
+     * Update widget position.
+     *
+     * @return Response
+     */
+    public function adminWidgetDisplayConfigPositionUpdateAction(
+        WidgetDisplayConfig $widgetDisplayConfig,
+        $row,
+        $column
+    )
+    {
+        $this->checkAccessForWidgetDisplayConfig($widgetDisplayConfig);
+        $widgetDisplayConfig->setRow($row);
+        $widgetDisplayConfig->setColumn($column);
+        $this->widgetManager->persistWidgetDisplayConfigs(array($widgetDisplayConfig));
+
+        return new Response('success', 204);
+    }
+
     private function checkHomeTab(HomeTab $homeTab)
     {
         if (!is_null($homeTab->getUser()) ||
@@ -418,6 +548,14 @@ class AdminUserTrackingController extends Controller
         if (!is_null($homeTabConfig->getUser()) ||
             !is_null($homeTabConfig->getWorkspace()) ||
             $homeTabConfig->getType() !== 'admin_user_tracking') {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkAccessForWidgetDisplayConfig(WidgetDisplayConfig $wdc)
+    {
+        if (!is_null($wdc->getUser()) || !is_null($wdc->getWorkspace())) {
 
             throw new AccessDeniedException();
         }

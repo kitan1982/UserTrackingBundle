@@ -1,4 +1,5 @@
 add_widget_to_tab: 'Ajouter un widget à l''onglet'
+no_widget_defined_in_configuration: 'Aucun widget n''est défini dans le configuration'
 tab_creation: 'Création d''un onglet'
 tab_delete_confirm_message: 'Voulez-vous vraiment supprimer cet onglet ?'
 tab_delete_confirm_title: 'Suppression de l''onglet'
