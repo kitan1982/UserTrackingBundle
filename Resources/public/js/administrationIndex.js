@@ -175,20 +175,20 @@
         );
     });
     
-//    $('#widgets-list-panel').on('click', '.close-widget-btn', function () {
-//        var whcId = $(this).data('widget-hometab-config-id');
-//        window.Claroline.Modal.confirmRequest(
-//            Routing.generate(
-//                'claro_admin_widget_home_tab_config_delete',
-//                {'widgetHomeTabConfig': whcId}
-//            ),
-//            removeWidget,
-//            whcId,
-//            Translator.trans('widget_home_tab_delete_confirm_message', {}, 'platform'),
-//            Translator.trans('widget_home_tab_delete_confirm_title', {}, 'platform')
-//        );
-//    });
-//    
+    $('#widgets-list-panel').on('click', '.close-widget-btn', function () {
+        var whcId = $(this).data('widget-hometab-config-id');
+        window.Claroline.Modal.confirmRequest(
+            Routing.generate(
+                'claro_user_tracking_admin_widget_instance_delete',
+                {'widgetHomeTabConfig': whcId}
+            ),
+            removeWidget,
+            whcId,
+            Translator.trans('widget_tab_delete_confirm_message', {}, 'usertracking'),
+            Translator.trans('widget_tab_delete_confirm_title', {}, 'usertracking')
+        );
+    });
+    
 //    $('#widgets-list-panel').on('click', '.edit-widget-content-btn', function () {
 //        currentWidgetInstanceId = $(this).data('widget-instance-id');
 //        var widgetInstanceName = $(this).data('widget-instance-name');
@@ -326,11 +326,11 @@
         }
     };
     
-//    var removeWidget = function (event, widgetHomeTabConfigId) {
-//        var widgetElement = $('#widget-element-' + widgetHomeTabConfigId);
-//        var grid = $('.grid-stack').data('gridstack');
-//        grid.remove_widget(widgetElement);
-//    };
+    var removeWidget = function (event, widgetHomeTabConfigId) {
+        var widgetElement = $('#widget-element-' + widgetHomeTabConfigId);
+        var grid = $('.grid-stack').data('gridstack');
+        grid.remove_widget(widgetElement);
+    };
     
     var addWidget = function (datas) {
         var wiId = datas['widgetInstanceId'];

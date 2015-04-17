@@ -522,8 +522,8 @@ class AdminUserTrackingController extends Controller
         WidgetDisplayConfig $widgetDisplayConfig
     )
     {
-        $this->checkAccessForWidgetInstance($widgetInstance);
-        $this->checkAccessForWidgetDisplayConfig($widgetDisplayConfig);
+        $this->checkWidgetInstance($widgetInstance);
+        $this->checkWidgetDisplayConfig($widgetDisplayConfig);
 
         $instanceForm = $this->formFactory->create(
             new WidgetDisplayType(),
@@ -557,8 +557,8 @@ class AdminUserTrackingController extends Controller
         WidgetDisplayConfig $widgetDisplayConfig
     )
     {
-        $this->checkAccessForWidgetInstance($widgetInstance);
-        $this->checkAccessForWidgetDisplayConfig($widgetDisplayConfig);
+        $this->checkWidgetInstance($widgetInstance);
+        $this->checkWidgetDisplayConfig($widgetDisplayConfig);
 
         $instanceForm = $this->formFactory->create(
             new WidgetDisplayType(),
@@ -598,6 +598,24 @@ class AdminUserTrackingController extends Controller
         }
     }
 
+    /**
+     * @EXT\Route(
+     *     "/administration/widget/config/{widgetHomeTabConfig}/delete",
+     *     name="claro_user_tracking_admin_widget_instance_delete",
+     *     options = {"expose"=true}
+     * )
+     */
+    public function adminWidgetHomeTabConfigDeleteAction(
+        WidgetHomeTabConfig $widgetHomeTabConfig
+    )
+    {
+        $this->checkWidgetHomeTabConfig($widgetHomeTabConfig);
+        $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
+        $this->homeTabManager->deleteWidgetHomeTabConfig($widgetHomeTabConfig);
+        $this->widgetManager->removeInstance($widgetInstance);
+
+        return new Response('success', 204);
+    }
 
     /**
      * @EXT\Route(
@@ -617,7 +635,7 @@ class AdminUserTrackingController extends Controller
         $column
     )
     {
-        $this->checkAccessForWidgetDisplayConfig($widgetDisplayConfig);
+        $this->checkWidgetDisplayConfig($widgetDisplayConfig);
         $widgetDisplayConfig->setRow($row);
         $widgetDisplayConfig->setColumn($column);
         $this->widgetManager->persistWidgetDisplayConfigs(array($widgetDisplayConfig));
@@ -645,7 +663,7 @@ class AdminUserTrackingController extends Controller
         }
     }
 
-    private function checkAccessForWidgetInstance(WidgetInstance $wi)
+    private function checkWidgetInstance(WidgetInstance $wi)
     {
         if (!is_null($wi->getUser()) ||
             !is_null($wi->getWorkspace()) ||
@@ -656,7 +674,17 @@ class AdminUserTrackingController extends Controller
         }
     }
 
-    private function checkAccessForWidgetDisplayConfig(WidgetDisplayConfig $wdc)
+    private function checkWidgetHomeTabConfig(WidgetHomeTabConfig $whtc)
+    {
+        if ($whtc->getType() !== 'admin_user_tracking' ||
+            !is_null($whtc->getUser()) ||
+            !is_null($whtc->getWorkspace())) {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkWidgetDisplayConfig(WidgetDisplayConfig $wdc)
     {
         if (!is_null($wdc->getUser()) || !is_null($wdc->getWorkspace())) {
 
