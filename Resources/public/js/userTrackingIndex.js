@@ -73,25 +73,18 @@
         );
     });
     
-//    $('#home-content').on('click', '.edit-hometab-btn', function (e) {
-//        e.preventDefault();
-//        var homeTabElement= $(this).parents('.hometab-element');
-//        var homeTabId = homeTabElement.data('hometab-id');
-//        var homeTabConfigId = homeTabElement.data('hometab-config-id');
-//        
-//        window.Claroline.Modal.displayForm(
-//            Routing.generate(
-//                'claro_user_tracking_tab_edit_form',
-//                {
-//                    'homeTab': homeTabId,
-//                    'homeTabConfig': homeTabConfigId
-//                }
-//            ),
-//            renameHomeTab,
-//            function() {}
-//        );
-//    });
-//
+    $('#home-content').on('click', '.edit-hometab-btn', function (e) {
+        e.preventDefault();
+        var homeTabElement= $(this).parents('.hometab-element');
+        var homeTabId = homeTabElement.data('hometab-id');
+        
+        window.Claroline.Modal.displayForm(
+            Routing.generate('claro_user_tracking_tab_edit_form', {'homeTab': homeTabId}),
+            renameHomeTab,
+            function() {}
+        );
+    });
+
 //    $('#home-content').on('click', '.delete-hometab-btn', function (e) {
 //        e.preventDefault();
 //        var homeTabElement = $(this).parents('.hometab-element');
@@ -301,26 +294,12 @@
         );
     };
 
-//    var renameHomeTab = function (datas) {
-//        var id = datas['id'];
-//        var name = datas['name'];
-//        var visibility = datas['visibility'];
-//        var lock = datas['lock'];
-//        $('#hometab-name-' + id).html(name);
-//        
-//        if (visibility === 'hidden') {
-//            $('#hometab-name-' + id).addClass('strike');
-//        } else {
-//            $('#hometab-name-' + id).removeClass('strike');
-//        }
-//        
-//        if (lock === 'locked') {
-//            $('#hometab-lock-' + id).removeClass('hidden');
-//        } else {
-//            $('#hometab-lock-' + id).addClass('hidden');
-//        }
-//    };
-//    
+    var renameHomeTab = function (datas) {
+        var id = datas['id'];
+        var name = datas['name'];
+        $('#hometab-name-' + id).html(name);
+    };
+    
 //    var removeHomeTab = function (event, homeTabId) {
 //        
 //        if (currentHomeTabId === parseInt(homeTabId)) {

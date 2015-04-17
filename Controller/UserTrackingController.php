@@ -177,10 +177,7 @@ class UserTrackingController extends Controller
      */
     public function tabCreateFormAction()
     {
-        $form = $this->formFactory->create(
-            new HomeTabType(null, false),
-            new HomeTab()
-        );
+        $form = $this->formFactory->create(new HomeTabType(null, false), new HomeTab());
 
         return array('form' => $form->createView());
     }
@@ -197,10 +194,7 @@ class UserTrackingController extends Controller
     public function tabCreateAction(User $user)
     {
         $homeTab = new HomeTab();
-        $form = $this->formFactory->create(
-            new HomeTabType(null, false),
-            $homeTab
-        );
+        $form = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
         $form->handleRequest($this->request);
 
         if ($form->isValid()) {
@@ -227,6 +221,73 @@ class UserTrackingController extends Controller
         } else {
 
             return array('form' => $form->createView());
+        }
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/tab/{homeTab}/edit/form",
+     *     name="claro_user_tracking_tab_edit_form",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     * @EXT\Template("ClarolineUserTrackingBundle:UserTracking:tabEditModalForm.html.twig")
+     */
+    public function tabEditFormAction(User $user, HomeTab $homeTab)
+    {
+        $this->checkHomeTab($homeTab, $user);
+
+        $form = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
+
+        return array('homeTab' => $homeTab, 'form' => $form->createView());
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/tab/{homeTab}/edit",
+     *     name="claro_user_tracking_tab_edit",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     * @EXT\Template("ClarolineUserTrackingBundle:UserTracking:tabEditModalForm.html.twig")
+     */
+    public function tabEditAction(User $user, HomeTab $homeTab)
+    {
+        $this->checkHomeTab($homeTab, $user);
+
+        $form = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
+        $form->handleRequest($this->request);
+
+        if ($form->isValid()) {
+            $this->homeTabManager->insertHomeTab($homeTab);
+
+            return new JsonResponse(
+                array('id' => $homeTab->getId(), 'name' => $homeTab->getName()),
+                200
+            );
+        } else {
+
+            return array('homeTab' => $homeTab, 'form' => $form->createView());
+        }
+    }
+
+    private function checkHomeTab(HomeTab $homeTab, User $user)
+    {
+        if ($homeTab->getUser() !== $user ||
+            !is_null($homeTab->getWorkspace()) ||
+            $homeTab->getType() !== 'user_tracking') {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkHomeTabConfig(HomeTabConfig $homeTabConfig, User $user)
+    {
+        if ($homeTabConfig->getUser() !== $user ||
+            !is_null($homeTabConfig->getWorkspace()) ||
+            $homeTabConfig->getType() !== 'user_tracking') {
+
+            throw new AccessDeniedException();
         }
     }
 }
