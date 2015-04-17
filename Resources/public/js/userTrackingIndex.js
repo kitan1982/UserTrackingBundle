@@ -85,23 +85,23 @@
         );
     });
 
-//    $('#home-content').on('click', '.delete-hometab-btn', function (e) {
-//        e.preventDefault();
-//        var homeTabElement = $(this).parents('.hometab-element');
-//        var homeTabId = homeTabElement.data('hometab-id');
-//
-//        window.Claroline.Modal.confirmRequest(
-//            Routing.generate(
-//                'claro_user_tracking_tab_delete',
-//                {'homeTab': homeTabId}
-//            ),
-//            removeHomeTab,
-//            homeTabId,
-//            Translator.trans('tab_delete_confirm_message', {}, 'usertracking'),
-//            Translator.trans('tab_delete_confirm_title', {}, 'usertracking')
-//        );
-//    });
-//    
+    $('#home-content').on('click', '.delete-hometab-btn', function (e) {
+        e.preventDefault();
+        var homeTabElement = $(this).parents('.hometab-element');
+        var homeTabId = homeTabElement.data('hometab-id');
+
+        window.Claroline.Modal.confirmRequest(
+            Routing.generate(
+                'claro_user_tracking_tab_delete',
+                {'homeTab': homeTabId}
+            ),
+            removeHomeTab,
+            homeTabId,
+            Translator.trans('tab_delete_confirm_message', {}, 'usertracking'),
+            Translator.trans('tab_delete_confirm_title', {}, 'usertracking')
+        );
+    });
+    
 //    $('#hometabs-list').sortable({
 //        items: '.movable-hometab',
 //        cursor: 'move'
@@ -300,15 +300,15 @@
         $('#hometab-name-' + id).html(name);
     };
     
-//    var removeHomeTab = function (event, homeTabId) {
-//        
-//        if (currentHomeTabId === parseInt(homeTabId)) {
-//            window.location.reload();
-//        } else {
-//            $('#hometab-element-' + homeTabId).remove();
-//        }
-//    };
-//    
+    var removeHomeTab = function (event, homeTabId) {
+        
+        if (currentHomeTabId === parseInt(homeTabId)) {
+            window.location.reload();
+        } else {
+            $('#hometab-element-' + homeTabId).remove();
+        }
+    };
+    
 //    var removeWidget = function (event, widgetHomeTabConfigId) {
 //        var widgetElement = $('#widget-element-' + widgetHomeTabConfigId);
 //        var grid = $('.grid-stack').data('gridstack');

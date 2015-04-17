@@ -271,6 +271,22 @@ class UserTrackingController extends Controller
         }
     }
 
+    /**
+     * @EXT\Route(
+     *     "/tab/{homeTab}/delete",
+     *     name="claro_user_tracking_tab_delete",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     */
+    public function tabDeleteAction(User $user, HomeTab $homeTab)
+    {
+        $this->checkHomeTab($homeTab, $user);
+        $this->homeTabManager->deleteHomeTab($homeTab);
+
+        return new Response('success', 204);
+    }
+
     private function checkHomeTab(HomeTab $homeTab, User $user)
     {
         if ($homeTab->getUser() !== $user ||
