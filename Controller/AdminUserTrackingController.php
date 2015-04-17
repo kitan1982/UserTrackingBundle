@@ -17,15 +17,19 @@ use Claroline\CoreBundle\Form\HomeTabConfigType;
 use Claroline\CoreBundle\Form\HomeTabType;
 use Claroline\CoreBundle\Manager\HomeTabManager;
 use Claroline\CoreBundle\Manager\WidgetManager;
+use Claroline\UserTrackingBundle\Form\UserTrackingConfigurationType;
 use Claroline\UserTrackingBundle\Manager\UserTrackingManager;
 use JMS\DiExtraBundle\Annotation as DI;
 use JMS\SecurityExtraBundle\Annotation as SEC;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * @DI\Tag("security.secure_service")
@@ -36,6 +40,8 @@ class AdminUserTrackingController extends Controller
     private $formFactory;
     private $homeTabManager;
     private $request;
+    private $router;
+    private $translator;
     private $userTrackingManager;
     private $widgetManager;
 
@@ -44,6 +50,8 @@ class AdminUserTrackingController extends Controller
      *     "formFactory"         = @DI\Inject("form.factory"),
      *     "homeTabManager"      = @DI\Inject("claroline.manager.home_tab_manager"),
      *     "requestStack"        = @DI\Inject("request_stack"),
+     *     "router"              = @DI\Inject("router"),
+     *     "translator"          = @DI\Inject("translator"),
      *     "userTrackingManager" = @DI\Inject("claroline.manager.user_tracking_manager"),
      *     "widgetManager"       = @DI\Inject("claroline.manager.widget_manager")
      * })
@@ -52,6 +60,8 @@ class AdminUserTrackingController extends Controller
         FormFactory $formFactory,
         HomeTabManager $homeTabManager,
         RequestStack $requestStack,
+        Translator $translator,
+        UrlGeneratorInterface $router,
         UserTrackingManager $userTrackingManager,
         WidgetManager $widgetManager
     )
@@ -59,6 +69,8 @@ class AdminUserTrackingController extends Controller
         $this->formFactory = $formFactory;
         $this->homeTabManager = $homeTabManager;
         $this->request = $requestStack->getCurrentRequest();
+        $this->router = $router;
+        $this->translator = $translator;
         $this->userTrackingManager = $userTrackingManager;
         $this->widgetManager = $widgetManager;
     }
@@ -142,6 +154,54 @@ class AdminUserTrackingController extends Controller
             'widgetsDatas' => $widgets,
             'initWidgetsPosition' => $initWidgetsPosition
         );
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/administration/configure/form",
+     *     name="claro_user_tracking_configure_form",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("ClarolineUserTrackingBundle:AdminUserTracking:userTrackingConfigureForm.html.twig")
+     */
+    public function userTrackingConfigureFormAction()
+    {
+        $config = $this->userTrackingManager->getConfiguration();
+        $form = $this->formFactory->create(
+            new UserTrackingConfigurationType($this->translator),
+            $config
+        );
+
+        return array('form' => $form->createView());
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/administration/configure",
+     *     name="claro_user_tracking_configure",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("ClarolineUserTrackingBundle:AdminUserTracking:userTrackingConfigureForm.html.twig")
+     */
+    public function userTrackingConfigureAction()
+    {
+        $config = $this->userTrackingManager->getConfiguration();
+        $form = $this->formFactory->create(
+            new UserTrackingConfigurationType($this->translator),
+            $config
+        );
+        $form->handleRequest($this->request);
+
+        if ($form->isValid()) {
+            $this->userTrackingManager->persistConfiguration($config);
+
+            return new RedirectResponse(
+                $this->router->generate('claro_user_tracking_administration_index')
+            );
+        } else {
+
+            return array('form' => $form->createView());
+        }
     }
 
     /**

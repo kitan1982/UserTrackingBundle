@@ -12,6 +12,7 @@
 namespace Claroline\UserTrackingBundle\Manager;
 
 use Claroline\CoreBundle\Persistence\ObjectManager;
+use Claroline\UserTrackingBundle\Entity\UserTrackingConfiguration;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -20,6 +21,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 class UserTrackingManager
 {
     private $om;
+    private $userTrackingConfigRepo;
 
     /**
      * @DI\InjectParams({
@@ -29,5 +31,27 @@ class UserTrackingManager
     public function __construct(ObjectManager $om)
     {
         $this->om = $om;
+        $this->userTrackingConfigRepo =
+            $om->getRepository('ClarolineUserTrackingBundle:UserTrackingConfiguration');
+    }
+
+    public function persistConfiguration(UserTrackingConfiguration $config)
+    {
+        $this->om->persist($config);
+        $this->om->flush();
+    }
+
+    public function getConfiguration()
+    {
+        $configs = $this->userTrackingConfigRepo->findAll();
+
+        if (count($configs) > 0) {
+            $config = $configs[0];
+        } else {
+            $config = new UserTrackingConfiguration();
+            $this->persistConfiguration($config);
+        }
+
+        return $config;
     }
 }

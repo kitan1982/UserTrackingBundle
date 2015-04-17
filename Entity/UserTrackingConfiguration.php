@@ -75,8 +75,8 @@ class UserTrackingConfiguration
 
     public function removeWidget(Widget $widget)
     {
-        if ($this->users->contains($widget)) {
-            $this->users->removeElement($widget);
+        if ($this->widgets->contains($widget)) {
+            $this->widgets->removeElement($widget);
         }
 
         return $this;
