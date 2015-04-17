@@ -287,6 +287,36 @@ class UserTrackingController extends Controller
         return new Response('success', 204);
     }
 
+    /**
+     * @EXT\Route(
+     *     "/tab/config/{homeTabConfig}/reorder/next/{nextHomeTabConfigId}",
+     *     name="claro_user_tracking_tab_config_reorder",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     * @EXT\Method("POST")
+     */
+    public function tabConfigReorderAction(
+        User $user,
+        HomeTabConfig $homeTabConfig,
+        $nextHomeTabConfigId
+    )
+    {
+        $this->checkHomeTabConfig($homeTabConfig, $user);
+        $homeTab = $homeTabConfig->getHomeTab();
+        $this->checkHomeTab($homeTab, $user);
+
+        $this->homeTabManager->reorderHomeTabConfigsByUserAndType(
+            $user,
+            'user_tracking',
+            $homeTabConfig,
+            $nextHomeTabConfigId
+        );
+
+        return new Response('success', 200);
+    }
+
+
     private function checkHomeTab(HomeTab $homeTab, User $user)
     {
         if ($homeTab->getUser() !== $user ||
