@@ -151,25 +151,25 @@
         );
     });
     
-//    $('#widgets-list-panel').on('click', '.edit-widget-btn', function () {
-//        var widgetHomeTabId = $(this).data('widget-hometab-config-id');
-//        var widgetDisplayConfigId = $(this).data('widget-display-config-id');
-//        var widgetInstanceId = $(this).data('widget-instance-id');
-//        
-//        window.Claroline.Modal.displayForm(
-//            Routing.generate(
-//                'claro_user_tracking_widget_config_edit_form',
-//                {
-//                    'widgetInstance': widgetInstanceId,
-//                    'widgetHomeTabConfig': widgetHomeTabId,
-//                    'widgetDisplayConfig': widgetDisplayConfigId
-//                }
-//            ),
-//            updateWidget,
-//            function() {}
-//        );
-//    });
-//    
+    $('#widgets-list-panel').on('click', '.edit-widget-btn', function () {
+        var widgetHomeTabId = $(this).data('widget-hometab-config-id');
+        var widgetDisplayConfigId = $(this).data('widget-display-config-id');
+        var widgetInstanceId = $(this).data('widget-instance-id');
+        
+        window.Claroline.Modal.displayForm(
+            Routing.generate(
+                'claro_user_tracking_widget_config_edit_form',
+                {
+                    'widgetInstance': widgetInstanceId,
+                    'widgetHomeTabConfig': widgetHomeTabId,
+                    'widgetDisplayConfig': widgetDisplayConfigId
+                }
+            ),
+            updateWidget,
+            function() {}
+        );
+    });
+    
 //    $('#widgets-list-panel').on('click', '.close-widget-btn', function () {
 //        var whcId = $(this).data('widget-hometab-config-id');
 //        window.Claroline.Modal.confirmRequest(
@@ -400,11 +400,11 @@
         });
     };
     
-//    var updateWidget = function (datas) {
-//        var id = datas['id'];
-//        var color = (datas['color'] === null) ? '' : datas['color'];
-//        $('#widget-element-title-' + id).html(datas['title']);
-//        $('#widget-element-header-' + id).css('background-color', color);
-//        $('#widget-element-content-' + id).css('border-color', color);
-//    };
+    var updateWidget = function (datas) {
+        var id = datas['id'];
+        var color = (datas['color'] === null) ? '' : datas['color'];
+        $('#widget-element-title-' + id).html(datas['title']);
+        $('#widget-element-header-' + id).css('background-color', color);
+        $('#widget-element-content-' + id).css('border-color', color);
+    };
 })();
