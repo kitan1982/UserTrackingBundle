@@ -509,24 +509,26 @@ class UserTrackingController extends Controller
         }
     }
 
-//    /**
-//     * @EXT\Route(
-//     *     "/administration/widget/config/{widgetHomeTabConfig}/delete",
-//     *     name="claro_user_tracking_admin_widget_instance_delete",
-//     *     options = {"expose"=true}
-//     * )
-//     */
-//    public function adminWidgetHomeTabConfigDeleteAction(
-//        WidgetHomeTabConfig $widgetHomeTabConfig
-//    )
-//    {
-//        $this->checkWidgetHomeTabConfig($widgetHomeTabConfig);
-//        $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
-//        $this->homeTabManager->deleteWidgetHomeTabConfig($widgetHomeTabConfig);
-//        $this->widgetManager->removeInstance($widgetInstance);
-//
-//        return new Response('success', 204);
-//    }
+    /**
+     * @EXT\Route(
+     *     "/widget/config/{widgetHomeTabConfig}/delete",
+     *     name="claro_user_tracking_widget_instance_delete",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     */
+    public function widgetHomeTabConfigDeleteAction(
+        User $user,
+        WidgetHomeTabConfig $widgetHomeTabConfig
+    )
+    {
+        $this->checkWidgetHomeTabConfig($widgetHomeTabConfig, $user);
+        $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
+        $this->homeTabManager->deleteWidgetHomeTabConfig($widgetHomeTabConfig);
+        $this->widgetManager->removeInstance($widgetInstance);
+
+        return new Response('success', 204);
+    }
 
     /**
      * @EXT\Route(
