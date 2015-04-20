@@ -600,26 +600,26 @@ class UserTrackingController extends Controller
 //        return new Response('success', 200);
 //    }
 
-//     /**
-//     * @EXT\Route(
-//     *     "/widget/{widgetInstance}/configuration",
-//     *     name="claro_user_tracking_widget_configuration",
-//     *     options={"expose"=true}
-//     * )
-//     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
-//     */
-//    public function widgetConfigurationAction(User $user, WidgetInstance $widgetInstance)
-//    {
-//        $this->checkWidgetInstance($widgetInstance, $user);
-//
-//        $event = $this->eventDispatcher->dispatch(
-//            "widget_{$widgetInstance->getWidget()->getName()}_configuration",
-//            'ConfigureWidget',
-//            array($widgetInstance)
-//        );
-//
-//        return new Response($event->getContent());
-//    }
+     /**
+     * @EXT\Route(
+     *     "/widget/{widgetInstance}/configuration",
+     *     name="claro_user_tracking_widget_configuration",
+     *     options={"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     */
+    public function widgetConfigurationAction(User $user, WidgetInstance $widgetInstance)
+    {
+        $this->checkWidgetInstance($widgetInstance, $user);
+
+        $event = $this->eventDispatcher->dispatch(
+            "widget_{$widgetInstance->getWidget()->getName()}_configuration",
+            'ConfigureWidget',
+            array($widgetInstance)
+        );
+
+        return new Response($event->getContent());
+    }
 
     /**
      * @EXT\Route(

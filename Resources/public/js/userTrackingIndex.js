@@ -184,69 +184,69 @@
         );
     });
     
-//    $('#widgets-list-panel').on('click', '.edit-widget-content-btn', function () {
-//        currentWidgetInstanceId = $(this).data('widget-instance-id');
-//        var widgetInstanceName = $(this).data('widget-instance-name');
-//        
-//        $.ajax({
-//            url: Routing.generate(
-//                'claro_user_tracking_widget_configuration',
-//                {'widgetInstance': currentWidgetInstanceId}
-//            ),
-//            type: 'GET',
-//            success: function (datas) {
-//                $('#widget-content-config-modal-title').html(widgetInstanceName);
-//                $('#widget-content-config-modal-body').html(datas);
-//                $('#widget-content-config-modal-box').modal('show');
-//            }
-//        });
-//    });
-//
-//    // Click on OK button of the configuration Widget form
-//    $('#widget-content-config-modal-box').on('submit', 'form', function (e) {
-//        e.stopImmediatePropagation();
-//        e.preventDefault();
-//        var form = e.currentTarget;
-//        var action = $(e.currentTarget).attr('action');
-//        var formData = new FormData(form);
-//        
-//        $.ajax({
-//            url: action,
-//            data: formData,
-//            type: 'POST',
-//            processData: false,
-//            contentType: false,
-//            complete: function (jqXHR) {
-//                switch (jqXHR.status) {
-//                    case 204:
-//                        $.ajax({
-//                            url: Routing.generate(
-//                                'claro_user_tracking_widget_content',
-//                                {'widgetInstance': currentWidgetInstanceId}
-//                            ),
-//                            type: 'GET',
-//                            success: function (datas) {
-//                                $('#widget-instance-content-' + currentWidgetInstanceId).html(datas);
-//                                $('#widget-content-config-modal-body').empty();
-//                                $('#widget-content-config-modal-box').modal('hide');
-//                            }
-//                        });
-//                        break;
-//                    default:
-//                        $('#widget-instance-content-' + currentWidgetInstanceId).html(jqXHR.responseText);
-//                }
-//            }
-//        });
-//    });
-//
-//    // Click on CANCEL button of the configuration Widget form
-//    $('#widget-content-config-modal-box').on('click', '.claro-widget-form-cancel', function (e) {
-//        e.stopImmediatePropagation();
-//        e.preventDefault();
-//        $('#widget-content-config-modal-body').empty();
-//        $('#widget-content-config-modal-box').modal('hide');
-//    });
-//    
+    $('#widgets-list-panel').on('click', '.edit-widget-content-btn', function () {
+        currentWidgetInstanceId = $(this).data('widget-instance-id');
+        var widgetInstanceName = $(this).data('widget-instance-name');
+        
+        $.ajax({
+            url: Routing.generate(
+                'claro_user_tracking_widget_configuration',
+                {'widgetInstance': currentWidgetInstanceId}
+            ),
+            type: 'GET',
+            success: function (datas) {
+                $('#widget-content-config-modal-title').html(widgetInstanceName);
+                $('#widget-content-config-modal-body').html(datas);
+                $('#widget-content-config-modal-box').modal('show');
+            }
+        });
+    });
+
+    // Click on OK button of the configuration Widget form
+    $('#widget-content-config-modal-box').on('submit', 'form', function (e) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        var form = e.currentTarget;
+        var action = $(e.currentTarget).attr('action');
+        var formData = new FormData(form);
+        
+        $.ajax({
+            url: action,
+            data: formData,
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            complete: function (jqXHR) {
+                switch (jqXHR.status) {
+                    case 204:
+                        $.ajax({
+                            url: Routing.generate(
+                                'claro_user_tracking_widget_content',
+                                {'widgetInstance': currentWidgetInstanceId}
+                            ),
+                            type: 'GET',
+                            success: function (datas) {
+                                $('#widget-instance-content-' + currentWidgetInstanceId).html(datas);
+                                $('#widget-content-config-modal-body').empty();
+                                $('#widget-content-config-modal-box').modal('hide');
+                            }
+                        });
+                        break;
+                    default:
+                        $('#widget-instance-content-' + currentWidgetInstanceId).html(jqXHR.responseText);
+                }
+            }
+        });
+    });
+
+    // Click on CANCEL button of the configuration Widget form
+    $('#widget-content-config-modal-box').on('click', '.claro-widget-form-cancel', function (e) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        $('#widget-content-config-modal-body').empty();
+        $('#widget-content-config-modal-box').modal('hide');
+    });
+    
 //    $('#widgets-list-panel').on('change', function (e, items) {
 //        var wdcIds = [];
 //        var datas = {};
