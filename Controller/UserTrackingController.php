@@ -554,51 +554,51 @@ class UserTrackingController extends Controller
         return new Response('success', 204);
     }
 
-//    /**
-//     * @EXT\Route(
-//     *     "/widgets/display/config/update",
-//     *     name="claro_user_tracking_widgets_display_config_update",
-//     *     options = {"expose"=true}
-//     * )
-//     * @EXT\Method("POST")
-//     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
-//     * @EXT\ParamConverter(
-//     *     "widgetDisplayConfigs",
-//     *      class="ClarolineCoreBundle:Widget\WidgetDisplayConfig",
-//     *      options={"multipleIds" = true, "name" = "wdcIds"}
-//     * )
-//     */
-//    public function widgetsDisplayConfigUpdateAction(
-//        User $user,
-//        array $widgetDisplayConfigs
-//    )
-//    {
-//        $toPersist = array();
-//
-//        foreach ($widgetDisplayConfigs as $config) {
-//
-//            $this->checkWidgetDisplayConfig($config, $user);
-//        }
-//        $datas = $this->request->request->all();
-//
-//        foreach ($widgetDisplayConfigs as $config) {
-//            $id = $config->getId();
-//
-//            if (isset($datas[$id]) && !empty($datas[$id])) {
-//                $config->setRow($datas[$id]['row']);
-//                $config->setColumn($datas[$id]['column']);
-//                $config->setWidth($datas[$id]['width']);
-//                $config->setHeight($datas[$id]['height']);
-//                $toPersist[] = $config;
-//            }
-//        }
-//
-//        if (count($toPersist) > 0) {
-//            $this->widgetManager->persistWidgetDisplayConfigs($toPersist);
-//        }
-//
-//        return new Response('success', 200);
-//    }
+    /**
+     * @EXT\Route(
+     *     "/widgets/display/config/update",
+     *     name="claro_user_tracking_widgets_display_config_update",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Method("POST")
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     * @EXT\ParamConverter(
+     *     "widgetDisplayConfigs",
+     *      class="ClarolineCoreBundle:Widget\WidgetDisplayConfig",
+     *      options={"multipleIds" = true, "name" = "wdcIds"}
+     * )
+     */
+    public function widgetsDisplayConfigUpdateAction(
+        User $user,
+        array $widgetDisplayConfigs
+    )
+    {
+        $toPersist = array();
+
+        foreach ($widgetDisplayConfigs as $config) {
+
+            $this->checkWidgetDisplayConfig($config, $user);
+        }
+        $datas = $this->request->request->all();
+
+        foreach ($widgetDisplayConfigs as $config) {
+            $id = $config->getId();
+
+            if (isset($datas[$id]) && !empty($datas[$id])) {
+                $config->setRow($datas[$id]['row']);
+                $config->setColumn($datas[$id]['column']);
+                $config->setWidth($datas[$id]['width']);
+                $config->setHeight($datas[$id]['height']);
+                $toPersist[] = $config;
+            }
+        }
+
+        if (count($toPersist) > 0) {
+            $this->widgetManager->persistWidgetDisplayConfigs($toPersist);
+        }
+
+        return new Response('success', 200);
+    }
 
      /**
      * @EXT\Route(
