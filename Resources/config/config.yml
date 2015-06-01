@@ -1,9 +1,5 @@
 plugin:
-  has_options: false
-
-  admin_tools:
-    - name: claroline_user_tracking_admin_tool
-      class: line-chart
+  has_options: true
       
   tools:
     - name: claroline_user_tracking_tool

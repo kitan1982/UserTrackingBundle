@@ -19,12 +19,22 @@
     <div id="hometab-datas-box"
          data-hometab-id="{{ curentHomeTabId }}"
          data-init-widgets-position="{% if initWidgetsPosition %}1{% else %}0{% endif %}"
+         data-mode="{{ mode }}"
     >
     </div>
 
     <div class="panel-heading">
         <h3 class="panel-title">
             {{ 'claroline_user_tracking_tool'|trans({}, 'tools') }}
+            
+            {% if canEdit %}
+                {% set nextMode = 0 %}
+            {% else %}
+                {% set nextMode = 1 %}
+            {% endif %}
+            <a href="{{ path('claro_user_tracking_index', {'mode': nextMode}) }}" class="pull-right">
+                <i class="fa {% if canEdit %}fa-unlock-alt{% else %}fa-lock{% endif %}"></i>
+            </a>
         </h3>
     </div>
 
@@ -38,29 +48,35 @@
                     data-hometab-config-id="{{ homeTabConfig.getId() }}"
                     data-hometab-id="{{ homeTabId }}"
                 >
-                    <a href="{{ path('claro_user_tracking_index', {'homeTabId': homeTabId}) }}">
+                    <a href="{{ path('claro_user_tracking_index', {'homeTabId': homeTabId, 'mode': mode}) }}">
                         <span id="hometab-name-{{ homeTabId }}">
                             {{ homeTab.getName() }}
                         </span>
-                        &nbsp;
-                        {% if homeTabId == curentHomeTabId %}
-                            <i class="fa fa-cog edit-hometab-btn pointer-hand text-muted"></i>
+                        
+                        {% if canEdit %}
+                            &nbsp;
+                            {% if homeTabId == curentHomeTabId %}
+                                <i class="fa fa-cog edit-hometab-btn pointer-hand text-muted"></i>
+                            {% endif %}
+                            <i class="fa fa-times delete-hometab-btn pointer-hand text-muted"></i>
                         {% endif %}
-                        <i class="fa fa-times delete-hometab-btn pointer-hand text-muted"></i>
                     </a>
                 </li>
             {% endfor %}
-            <li id="add-hometab-btn">
-                <a class="pointer-hand">
-                    <span class="text-muted">
-                        <i id="add-hometab-button" class="fa fa-plus"></i>
-                        
-                        {% if homeTabConfigs|length == 0 %}
-                            {{ 'create_new_home_tab' | trans({}, 'platform') }}
-                        {% endif %}
-                    </span>
-                </a>
-            </li>
+                
+            {% if canEdit %}
+                <li id="add-hometab-btn">
+                    <a class="pointer-hand">
+                        <span class="text-muted">
+                            <i id="add-hometab-button" class="fa fa-plus"></i>
+
+                            {% if homeTabConfigs|length == 0 %}
+                                {{ 'create_new_home_tab' | trans({}, 'platform') }}
+                            {% endif %}
+                        </span>
+                    </a>
+                </li>
+            {% endif %}
         </ul>
         <br>
         
@@ -86,6 +102,11 @@
                          data-gs-height="{{ widgetDisplayConfig.getHeight() }}"
                          id="widget-element-{{ whtcId }}"
                          data-widget-display-config-id="{{ widgetDisplayConfig.getId() }}"
+                         
+                         {% if not canEdit %}
+                             data-gs-no-resize="true"
+                             data-gs-no-move="true"
+                         {% endif %}
                     >
                         <div class="grid-stack-item-content panel panel-default"
                              id="widget-element-content-{{ whtcId }}"
@@ -100,25 +121,29 @@
                                  {% endif %}
                             >
                                 <h3 class="panel-title">
-                                    <span class="pull-right">
-                                        <i class="fa fa-times close close-widget-btn"
-                                           data-widget-hometab-config-id="{{ whtcId }}"
-                                        ></i>
-                                        <span class="close">&nbsp;</span>
-                                        <i class="fa fa-cog close edit-widget-btn"
-                                           data-widget-hometab-config-id="{{ whtcId }}"
-                                           data-widget-instance-id="{{ widgetInstance.getId() }}"
-                                           data-widget-display-config-id="{{ widgetDisplayConfig.getId() }}"
-                                        ></i>
-
-                                        {% if widget.isConfigurable() %}
-                                            <span class="close">&nbsp;</span>
-                                            <i class="fa fa-pencil close edit-widget-content-btn"
-                                               data-widget-instance-id="{{ widgetInstance.getId() }}"
-                                               data-widget-instance-name="{{ widgetInstance.getName() }}"
+                                    
+                                    {% if canEdit %}
+                                        <span class="pull-right">
+                                            <i class="fa fa-times close close-widget-btn"
+                                               data-widget-hometab-config-id="{{ whtcId }}"
                                             ></i>
-                                        {% endif %}
-                                    </span>
+                                            <span class="close">&nbsp;</span>
+                                            <i class="fa fa-cog close edit-widget-btn"
+                                               data-widget-hometab-config-id="{{ whtcId }}"
+                                               data-widget-instance-id="{{ widgetInstance.getId() }}"
+                                               data-widget-display-config-id="{{ widgetDisplayConfig.getId() }}"
+                                            ></i>
+
+                                            {% if widget.isConfigurable() %}
+                                                <span class="close">&nbsp;</span>
+                                                <i class="fa fa-pencil close edit-widget-content-btn"
+                                                   data-widget-instance-id="{{ widgetInstance.getId() }}"
+                                                   data-widget-instance-name="{{ widgetInstance.getName() }}"
+                                                ></i>
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                    
                                     <span id="widget-element-title-{{ whtcId }}">
                                        {{ widgetInstance.getName() }}
                                     </span>
@@ -133,18 +158,16 @@
                     </div>
                 {% endfor %}
             </div>
-            <br>
             
-            {% if homeTabConfigs|length > 0 %}
+            {% if canEdit and homeTabConfigs|length > 0 %}
+                <hr>
             
                 {% if canAddWidgets %}
-                    <div id="create-widget-instance" class="panel panel-default">
-                        <div class="panel-heading pointer-hand text-center">
-                            <i class="fa fa-plus-circle">
-                                {{ 'add_widget_to_tab'|trans({}, 'usertracking') }}
-                            </i>
-                        </div>
-                    </div>
+                    <span id="create-widget-instance" class="btn btn-primary">
+                        <i class="fa fa-plus-circle">
+                        </i>
+                        {{ 'add_widget_to_tab'|trans({}, 'usertracking') }}
+                    </span>
                 {% else %}
                     <div class="alert alert-danger">
                         {{ 'no_widget_defined_in_configuration'|trans({}, 'usertracking') }}
@@ -189,9 +212,17 @@
             src="{{ url('bazinga_jstranslation_js', { 'domain': 'usertracking' }) }}"
     >
     </script>
-    <script
-        src='{{ asset('bundles/clarolineusertracking/js/userTrackingIndex.js') }}'
-        type="text/javascript">
+    
+    {% if canEdit %}
+        <script src='{{ asset('bundles/clarolineusertracking/js/userTrackingIndex.js') }}'
+                type="text/javascript">
+        </script>
+    {% endif %}
+    <script type="text/javascript">
+        $('.grid-stack').gridstack({
+            width: 12,
+            animate: true
+        });
     </script>
 {% endblock %}
     

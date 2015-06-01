@@ -11,8 +11,8 @@
 
 namespace Claroline\UserTrackingBundle\Listener;
 
-use Claroline\CoreBundle\Event\OpenAdministrationToolEvent;
 use Claroline\CoreBundle\Event\DisplayToolEvent;
+use Claroline\CoreBundle\Event\PluginOptionsEvent;
 use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -41,14 +41,14 @@ class UserTrackingListener
     }
 
     /**
-     * @DI\Observe("administration_tool_claroline_user_tracking_admin_tool")
+     * @DI\Observe("plugin_options_usertrackingbundle")
      *
-     * @param OpenAdministrationToolEvent $event
+     * @param DisplayToolEvent $event
      */
-    public function onAdministrationUserTrackingToolOpen(OpenAdministrationToolEvent $event)
+    public function onPluginOptionsOpen(PluginOptionsEvent $event)
     {
         $params = array();
-        $params['_controller'] = 'ClarolineUserTrackingBundle:AdminUserTracking:administrationIndex';
+        $params['_controller'] = 'ClarolineUserTrackingBundle:UserTracking:pluginConfigureForm';
         $subRequest = $this->request->duplicate(array(), null, $params);
         $response = $this->httpKernel
             ->handle($subRequest, HttpKernelInterface::SUB_REQUEST);

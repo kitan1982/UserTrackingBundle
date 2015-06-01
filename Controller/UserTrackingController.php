@@ -22,26 +22,35 @@ use Claroline\CoreBundle\Form\HomeTabType;
 use Claroline\CoreBundle\Form\WidgetDisplayConfigType;
 use Claroline\CoreBundle\Form\WidgetDisplayType;
 use Claroline\CoreBundle\Manager\HomeTabManager;
+use Claroline\CoreBundle\Manager\ToolManager;
 use Claroline\CoreBundle\Manager\WidgetManager;
+use Claroline\UserTrackingBundle\Entity\TrackingTab;
+use Claroline\UserTrackingBundle\Form\TrackingTabType;
+use Claroline\UserTrackingBundle\Form\UserTrackingConfigurationType;
 use Claroline\UserTrackingBundle\Form\WidgetInstanceType;
 use Claroline\UserTrackingBundle\Manager\UserTrackingManager;
 use JMS\DiExtraBundle\Annotation as DI;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Translation\TranslatorInterface;
 
 class UserTrackingController extends Controller
 {
+    private $authorization;
     private $eventDispatcher;
     private $formFactory;
     private $homeTabManager;
     private $request;
     private $router;
+    private $toolManager;
     private $translator;
     private $userTrackingConfig;
     private $userTrackingManager;
@@ -49,32 +58,38 @@ class UserTrackingController extends Controller
 
     /**
      * @DI\InjectParams({
+     *     "authorization"       = @DI\Inject("security.authorization_checker"),
      *     "eventDispatcher"     = @DI\Inject("claroline.event.event_dispatcher"),
      *     "formFactory"         = @DI\Inject("form.factory"),
      *     "homeTabManager"      = @DI\Inject("claroline.manager.home_tab_manager"),
      *     "requestStack"        = @DI\Inject("request_stack"),
      *     "router"              = @DI\Inject("router"),
+     *     "toolManager"         = @DI\Inject("claroline.manager.tool_manager"),
      *     "translator"          = @DI\Inject("translator"),
      *     "userTrackingManager" = @DI\Inject("claroline.manager.user_tracking_manager"),
      *     "widgetManager"       = @DI\Inject("claroline.manager.widget_manager")
      * })
      */
     public function __construct(
+        AuthorizationCheckerInterface $authorization,
         StrictDispatcher $eventDispatcher,
         FormFactory $formFactory,
         HomeTabManager $homeTabManager,
         RequestStack $requestStack,
         UrlGeneratorInterface $router,
-        Translator $translator,
+        ToolManager $toolManager,
+        TranslatorInterface $translator,
         UserTrackingManager $userTrackingManager,
         WidgetManager $widgetManager
     )
     {
+        $this->authorization = $authorization;
         $this->eventDispatcher  = $eventDispatcher;
         $this->formFactory = $formFactory;
         $this->homeTabManager = $homeTabManager;
         $this->request = $requestStack->getCurrentRequest();
         $this->router = $router;
+        $this->toolManager = $toolManager;
         $this->translator = $translator;
         $this->userTrackingConfig = $userTrackingManager->getConfiguration();
         $this->userTrackingManager = $userTrackingManager;
@@ -83,15 +98,15 @@ class UserTrackingController extends Controller
 
     /**
      * @EXT\Route(
-     *     "/index/tab/{homeTabId}",
+     *     "/index/tab/{homeTabId}/mode/{mode}",
      *     name="claro_user_tracking_index",
-     *     defaults={"homeTabId" = -1},
+     *     defaults={"homeTabId"=-1,"mode"=0},
      *     options = {"expose"=true}
      * )
      * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
      * @EXT\Template()
      */
-    public function userTrackingIndexAction(User $user, $homeTabId = -1)
+    public function userTrackingIndexAction(User $user, $homeTabId = -1, $mode = 0)
     {
         $homeTabConfigs = $this->homeTabManager
             ->getHomeTabConfigsByType('user_tracking');
@@ -163,7 +178,9 @@ class UserTrackingController extends Controller
             'homeTabConfigs' => $homeTabConfigs,
             'widgetsDatas' => $widgets,
             'initWidgetsPosition' => $initWidgetsPosition,
-            'canAddWidgets' => $canAddWidgets
+            'canAddWidgets' => $canAddWidgets,
+            'mode' => $mode,
+            'canEdit' => (intval($mode) === 1)
         );
     }
 
@@ -178,9 +195,19 @@ class UserTrackingController extends Controller
      */
     public function tabCreateFormAction()
     {
-        $form = $this->formFactory->create(new HomeTabType(null, false), new HomeTab());
+        $trackingTabForm = $this->formFactory->create(
+            new TrackingTabType(),
+            new TrackingTab()
+        );
+        $homeTabForm = $this->formFactory->create(
+            new HomeTabType(null, false),
+            new HomeTab()
+        );
 
-        return array('form' => $form->createView());
+        return array(
+            'trackingTabForm' => $trackingTabForm->createView(),
+            'homeTabForm' => $homeTabForm->createView()
+        );
     }
 
     /**
@@ -194,11 +221,20 @@ class UserTrackingController extends Controller
      */
     public function tabCreateAction(User $user)
     {
+        $trackingTab = new TrackingTab();
+        $trackingTab->setOwner($user);
         $homeTab = new HomeTab();
-        $form = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
-        $form->handleRequest($this->request);
 
-        if ($form->isValid()) {
+        $trackingTabForm = $this->formFactory->create(
+            new TrackingTabType(),
+            $trackingTab
+        );
+        $homeTabForm = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
+
+        $trackingTabForm->handleRequest($this->request);
+        $homeTabForm->handleRequest($this->request);
+
+        if ($homeTabForm->isValid() && $trackingTabForm->isValid()) {
             $homeTab->setType('user_tracking');
             $homeTab->setUser($user);
             $this->homeTabManager->insertHomeTab($homeTab);
@@ -218,10 +254,16 @@ class UserTrackingController extends Controller
             }
             $this->homeTabManager->persistHomeTabConfigs($homeTab, $homeTabConfig);
 
+            $trackingTab->setHomeTab($homeTab);
+            $this->userTrackingManager->persistTrackingTab($trackingTab);
+
             return new JsonResponse($homeTab->getId(), 200);
         } else {
 
-            return array('form' => $form->createView());
+            return array(
+                'trackingTabForm' => $trackingTabForm->createView(),
+                'homeTabForm' => $homeTabForm->createView()
+            );
         }
     }
 
@@ -237,10 +279,21 @@ class UserTrackingController extends Controller
     public function tabEditFormAction(User $user, HomeTab $homeTab)
     {
         $this->checkHomeTab($homeTab, $user);
+        $trackingTab = $this->userTrackingManager->getUserTrackingTabByHomeTab(
+            $user,
+            $homeTab
+        );
+        $trackingTabForm = $this->formFactory->create(
+            new TrackingTabType(),
+            $trackingTab
+        );
+        $homeTabForm = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
 
-        $form = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
-
-        return array('homeTab' => $homeTab, 'form' => $form->createView());
+        return array(
+            'homeTab' => $homeTab,
+            'trackingTabForm' => $trackingTabForm->createView(),
+            'homeTabForm' => $homeTabForm->createView()
+        );
     }
 
     /**
@@ -255,12 +308,22 @@ class UserTrackingController extends Controller
     public function tabEditAction(User $user, HomeTab $homeTab)
     {
         $this->checkHomeTab($homeTab, $user);
+        $trackingTab = $this->userTrackingManager->getUserTrackingTabByHomeTab(
+            $user,
+            $homeTab
+        );
+        $trackingTabForm = $this->formFactory->create(
+            new TrackingTabType(),
+            $trackingTab
+        );
+        $homeTabForm = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
 
-        $form = $this->formFactory->create(new HomeTabType(null, false), $homeTab);
-        $form->handleRequest($this->request);
+        $trackingTabForm->handleRequest($this->request);
+        $homeTabForm->handleRequest($this->request);
 
-        if ($form->isValid()) {
+        if ($homeTabForm->isValid() && $trackingTabForm->isValid()) {
             $this->homeTabManager->insertHomeTab($homeTab);
+            $this->userTrackingManager->persistTrackingTab($trackingTab);
 
             return new JsonResponse(
                 array('id' => $homeTab->getId(), 'name' => $homeTab->getName()),
@@ -268,7 +331,11 @@ class UserTrackingController extends Controller
             );
         } else {
 
-            return array('homeTab' => $homeTab, 'form' => $form->createView());
+            return array(
+                'homeTab' => $homeTab,
+                'trackingTabForm' => $trackingTabForm->createView(),
+                'homeTabForm' => $homeTabForm->createView()
+            );
         }
     }
 
@@ -640,6 +707,64 @@ class UserTrackingController extends Controller
         return new Response($event->getContent());
     }
 
+
+    /********************************
+     * Plugin configuration methods *
+     ********************************/
+
+    /**
+     * @EXT\Route(
+     *     "/plugin/configure/form",
+     *     name="claro_user_tracking_plugin_configure_form"
+     * )
+     * @EXT\ParamConverter("authenticatedUser", options={"authenticatedUser" = true})
+     * @EXT\Template()
+     */
+    public function pluginConfigureFormAction()
+    {
+        $this->checkConfigurationAccess();
+        $form = $this->formFactory->create(
+            new UserTrackingConfigurationType($this->translator),
+            $this->userTrackingConfig
+       );
+
+        return array('form' => $form->createView());
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/plugin/configure",
+     *     name="claro_user_tracking_plugin_configure"
+     * )
+     * @EXT\ParamConverter("authenticatedUser", options={"authenticatedUser" = true})
+     * @EXT\Template("ClarolineUserTrackingBundle:UserTracking:pluginConfigureForm.html.twig")
+     */
+    public function pluginConfigureAction()
+    {
+        $this->checkConfigurationAccess();
+        $form = $this->formFactory->create(
+            new UserTrackingConfigurationType($this->translator),
+            $this->userTrackingConfig
+        );
+        $form->handleRequest($this->request);
+
+        if ($form->isValid()) {
+            $this->userTrackingManager->persistConfiguration($this->userTrackingConfig);
+
+            return new RedirectResponse(
+                $this->router->generate('claro_admin_plugins')
+            );
+        } else {
+
+            return array('form' => $form->createView());
+        }
+    }
+
+
+    /********************
+     * Security methods *
+     ********************/
+
     private function checkHomeTab(HomeTab $homeTab, User $user)
     {
         if ($homeTab->getUser() !== $user ||
@@ -684,6 +809,17 @@ class UserTrackingController extends Controller
     private function checkWidgetDisplayConfig(WidgetDisplayConfig $wdc, User $user)
     {
         if ($wdc->getUser() !== $user || !is_null($wdc->getWorkspace())) {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkConfigurationAccess()
+    {
+        $packagesTool = $this->toolManager->getAdminToolByName('platform_packages');
+
+        if (is_null($packagesTool) ||
+            !$this->authorization->isGranted('OPEN', $packagesTool)) {
 
             throw new AccessDeniedException();
         }

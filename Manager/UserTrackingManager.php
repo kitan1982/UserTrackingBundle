@@ -11,7 +11,10 @@
 
 namespace Claroline\UserTrackingBundle\Manager;
 
+use Claroline\CoreBundle\Entity\Home\HomeTab;
+use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Persistence\ObjectManager;
+use Claroline\UserTrackingBundle\Entity\TrackingTab;
 use Claroline\UserTrackingBundle\Entity\UserTrackingConfiguration;
 use JMS\DiExtraBundle\Annotation as DI;
 
@@ -21,6 +24,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 class UserTrackingManager
 {
     private $om;
+    private $trackingTabRepo;
     private $userTrackingConfigRepo;
 
     /**
@@ -31,6 +35,8 @@ class UserTrackingManager
     public function __construct(ObjectManager $om)
     {
         $this->om = $om;
+        $this->trackingTabRepo =
+            $om->getRepository('ClarolineUserTrackingBundle:TrackingTab');
         $this->userTrackingConfigRepo =
             $om->getRepository('ClarolineUserTrackingBundle:UserTrackingConfiguration');
     }
@@ -53,5 +59,48 @@ class UserTrackingManager
         }
 
         return $config;
+    }
+
+    public function persistTrackingTab(TrackingTab $trackingTab)
+    {
+        $this->om->persist($trackingTab);
+        $this->om->flush();
+    }
+
+    public function getUserTrackingTabByHomeTab(User $user, HomeTab $homeTab)
+    {
+        $trackingTab = $this->getTrackingTabByUserAndHomeTab($user, $homeTab);
+
+        if (is_null($trackingTab)) {
+            $trackingTab = new TrackingTab();
+            $trackingTab->setOwner($user);
+            $trackingTab->setHomeTab($homeTab);
+            $this->persistTrackingTab($trackingTab);
+        }
+
+        return $trackingTab;
+    }
+
+
+    /*******************************************
+     * Access to TrackingTabRepository methods *
+     *******************************************/
+
+    public function getTrackingTabsByUser(User $user, $executeQuery = true)
+    {
+        return $this->trackingTabRepo->findTrackingTabsByUser($user, $executeQuery);
+    }
+
+    public function getTrackingTabByUserAndHomeTab(
+        User $user,
+        HomeTab $homeTab,
+        $executeQuery = true
+    )
+    {
+        return $this->trackingTabRepo->findTrackingTabByUserAndHomeTab(
+            $user,
+            $homeTab,
+            $executeQuery
+        );
     }
 }

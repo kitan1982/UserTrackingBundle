@@ -13,6 +13,7 @@
     var currentHomeTabId = parseInt($('#hometab-datas-box').data('hometab-id'));
     var initWidgetsPosition =
         parseInt($('#hometab-datas-box').data('init-widgets-position')) === 1;
+    var currentMode = parseInt($('#hometab-datas-box').data('mode'));
     var currentWidgetInstanceId;
     
     function persistWidgetsPosition()
@@ -129,11 +130,6 @@
                 type: 'POST'
             });
         }
-    });
-    
-    $('.grid-stack').gridstack({
-        width: 12,
-        animate: true
     });
     
     $('body').on('focus', '#widget_display_config_form_color', function () {
@@ -290,7 +286,7 @@
     var openHomeTab = function (homeTabId) {
         window.location = Routing.generate(
             'claro_user_tracking_index',
-            {'homeTabId': homeTabId}
+            {'homeTabId': homeTabId, 'mode': currentMode}
         );
     };
 

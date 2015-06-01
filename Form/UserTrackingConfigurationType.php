@@ -12,16 +12,16 @@
 namespace Claroline\UserTrackingBundle\Form;
 
 use Doctrine\ORM\EntityRepository;
-use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 
 class UserTrackingConfigurationType extends AbstractType
 {
     private $translator;
 
-    public function __construct(Translator $translator)
+    public function __construct(TranslatorInterface $translator)
     {
         $this->translator = $translator;
     }

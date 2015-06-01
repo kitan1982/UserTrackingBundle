@@ -1,23 +1,23 @@
 {% extends "ClarolineCoreBundle:Administration:layout.html.twig" %}
 
 {% block title %}
-    {{ parent() ~ ' - ' ~ 'configuration'|trans({}, 'platform') | striptags | raw }}
+    {{ parent() ~ ' - ' ~ 'user_tracking_plugin_configuration'|trans({}, 'usertracking') | striptags | raw }}
 {% endblock %}
+
 
 {% block breadcrumb %}
     {{
         macros.breadcrumbs([
             {
-                'icon': 'fa fa-cog',
                 'name': 'administration'|trans({}, 'platform'),
                 'href': path('claro_admin_index')
             },
             {
-                'name': 'claroline_user_tracking_admin_tool'|trans({}, 'tools'),
-                'href': path('claro_user_tracking_administration_index')
+                'name': 'packages'|trans({}, 'platform'),
+                'href': path('claro_admin_plugins')
             },
             {
-                'name': 'configuration'|trans({}, 'platform'),
+                'name': 'user_tracking_plugin_configuration'|trans({}, 'usertracking'),
                 'href': ''
             }
         ])
@@ -27,12 +27,12 @@
 {% block section_content %}
     <div class="panel-heading">
         <h3 class="panel-title">
-            {{ 'configuration'|trans({}, 'platform') }}
+            {{ 'user_tracking_plugin_configuration'|trans({}, 'usertracking') }}
         </h3>
     </div>
     <form role="form"
           class="form-horizontal"
-          action="{{ path('claro_user_tracking_configure') }}"
+          action="{{ path('claro_user_tracking_plugin_configure') }}"
           method="post"
           {{ form_enctype(form) }}
           id="form_settings"
@@ -49,7 +49,7 @@
             <button type="submit" class="btn btn-primary">
                 {{ 'ok'|trans({}, 'platform') }}
             </button>
-            <a href="{{ path('claro_user_tracking_administration_index') }}"
+            <a href="{{ path('claro_admin_plugins') }}"
                class="btn btn-default"
             >
                 {{ 'cancel'|trans({}, 'platform') }}
