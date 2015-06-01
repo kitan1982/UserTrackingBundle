@@ -108,8 +108,10 @@ class UserTrackingController extends Controller
      */
     public function userTrackingIndexAction(User $user, $homeTabId = -1, $mode = 0)
     {
-        $homeTabConfigs = $this->homeTabManager
-            ->getHomeTabConfigsByType('user_tracking');
+        $homeTabConfigs = $this->homeTabManager->getHomeTabConfigsByUserAndType(
+            $user,
+            'user_tracking'
+        );
         $tabId = intval($homeTabId);
         $widgets = array();
         $firstElement = true;

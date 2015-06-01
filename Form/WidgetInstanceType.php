@@ -33,6 +33,7 @@ class WidgetInstanceType extends AbstractType
             'entity',
             array(
                 'class' => 'Claroline\CoreBundle\Entity\Widget\Widget',
+                'choice_translation_domain' => true,
                 'expanded' => false,
                 'multiple' => false,
                 'choices' => $this->config->getWidgets()
